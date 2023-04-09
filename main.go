@@ -7,14 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
-	"github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
-	"github.com/jetstack/cert-manager/pkg/acme/webhook/cmd"
+	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
+	"github.com/cert-manager/cert-manager/pkg/acme/webhook/cmd"
 	"go.uber.org/zap"
-	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -171,7 +170,7 @@ func loadConfig(cfgJSON *extapi.JSON) (googledomainsDNSProviderConfig, error) {
 func clientConfig(c *googledomainsDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (Config, error) {
 	var config Config
 
-	cfg, err := loadConfig(ch.Config)
+	cfg, err := loadConfig((ch.Config))
 	if err != nil {
 		return config, err
 	}
@@ -217,7 +216,7 @@ func callDnsApi(url string, method string, body io.Reader, config Config) ([]byt
 		}
 	}()
 
-	respBody, _ := ioutil.ReadAll(resp.Body)
+	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode == http.StatusOK {
 		return respBody, nil
 	}

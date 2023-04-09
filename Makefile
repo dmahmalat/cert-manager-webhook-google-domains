@@ -1,27 +1,40 @@
-OS ?= $(shell go env GOOS)
-ARCH ?= $(shell go env GOARCH)
-KUBEBUILDER_VERSION=2.3.2
+GO ?= $(shell which go)
+OS ?= $(shell $(GO) env GOOS)
+ARCH ?= $(shell $(GO) env GOARCH)
+
+IMAGE_NAME := "webhook"
+IMAGE_TAG := "latest"
+
+OUT := $(shell pwd)/_out
+
+KUBE_VERSION=1.26.0
+
+$(shell mkdir -p "$(OUT)")
+export TEST_ASSET_ETCD=_test/kubebuilder/etcd
+export TEST_ASSET_KUBE_APISERVER=_test/kubebuilder/kube-apiserver
+export TEST_ASSET_KUBECTL=_test/kubebuilder/kubectl
 
 test: _test/kubebuilder
-	go test -v .
+	$(GO) test -v .
 
 _test/kubebuilder:
-	echo "starting kubebuilder"
-	curl -fsSL https://github.com/kubernetes-sigs/kubebuilder/releases/download/v$(KUBEBUILDER_VERSION)/kubebuilder_$(KUBEBUILDER_VERSION)_$(OS)_$(ARCH).tar.gz -o kubebuilder-tools.tar.gz
+	curl -fsSL https://go.kubebuilder.io/test-tools/$(KUBE_VERSION)/$(OS)/$(ARCH) -o kubebuilder-tools.tar.gz
 	mkdir -p _test/kubebuilder
 	tar -xvf kubebuilder-tools.tar.gz
-	mv kubebuilder_$(KUBEBUILDER_VERSION)_$(OS)_$(ARCH)/bin _test/kubebuilder/
+	mv kubebuilder/bin/* _test/kubebuilder/
 	rm kubebuilder-tools.tar.gz
-	rm -R kubebuilder_$(KUBEBUILDER_VERSION)_$(OS)_$(ARCH)
+	rm -R kubebuilder
+	mkdir -p testdata/googledomains
 
 clean: clean-kubebuilder
 
 clean-kubebuilder:
 	rm -Rf _test/kubebuilder
+	rm -Rf testdata/googledomains
 
-REGISTRY = "dmahmalat"
+REGISTRY = "nblxa.github.io"
 IMAGE_NAME = "cert-manager-webhook-google-domains"
-IMAGE_TAG  = "1.0.0"
+IMAGE_TAG  = "0.1.0"
 
 build:
 	DOCKER_BUILDKIT=1 docker build -t "$(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)" .
@@ -40,7 +53,7 @@ verify-chart:
 
 generate-chart:
 	helm package chart/
-	helm repo index --url https://dmahmalat.github.io/charts .
+	helm repo index --url https://nblxa.github.io/charts .
 	mkdir -p _chart/
 	mv cert-manager-webhook-google-domains-*.tgz _chart/
 	mv index.yaml _chart/

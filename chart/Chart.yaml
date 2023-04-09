@@ -7,10 +7,10 @@ version: 1.0.0
 appVersion: 1.0.0
 
 icon: https://domains.google/static/images/logo/new_logo.svg
-home: https://github.com/dmahmalat/cert-manager-webhook-google-domains/chart
+home: https://github.com/nblxa/cert-manager-webhook-google-domains/chart
 
 sources:
-- https://github.com/dmahmalat/cert-manager-webhook-google-domains
+- https://github.com/nblxa/cert-manager-webhook-google-domains
 
 keywords:
 - cert-manager
@@ -20,5 +20,5 @@ keywords:
 - dns
 
 maintainers:
-- name: dmahmalat
+- name: nblxa
   email: dany@mahmalat.com

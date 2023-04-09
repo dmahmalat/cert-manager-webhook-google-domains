@@ -1,8 +1,8 @@
 # ACME webhook for google-domains DNS API
 Usage:
 ```bash
-helm repo add dmahmalat https://dmahmalat.github.io/charts
-helm install my-release dmahmalat/cert-manager-webhook-google-domains
+helm repo add nblxa https://nblxa.github.io/charts
+helm install my-release nblxa/cert-manager-webhook-google-domains
 ```
 
 To test:

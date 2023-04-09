@@ -1,5 +1,5 @@
 # Build Dependencies ---------------------------
-FROM golang:1.16-alpine AS build_deps
+FROM golang:1.19-alpine AS build_deps
 
 RUN apk add --no-cache git
 
@@ -16,7 +16,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' .
 
 # Package the image ----------------------------
-FROM alpine:3.14.0
+FROM alpine:3.17.3
 
 RUN apk add --no-cache ca-certificates
 

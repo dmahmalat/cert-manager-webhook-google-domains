@@ -2,13 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"gopkg.in/yaml.v3"
 	"math/rand"
 	"os"
 	"testing"
 
-	"github.com/jetstack/cert-manager/test/acme/dns"
-	"gopkg.in/yaml.v3"
+	"github.com/cert-manager/cert-manager/test/acme/dns"
 )
 
 var (
@@ -47,7 +46,7 @@ func TestRunsSuite(t *testing.T) {
 	if err != nil {
 		slogger.Error(err)
 	}
-	_ = ioutil.WriteFile(secretYamlFilePath, secretYamlFile, 0644)
+	_ = os.WriteFile(secretYamlFilePath, secretYamlFile, 0644)
 
 	providerConfig := googledomainsDNSProviderConfig{
 		"https://acmedns.googleapis.com/v1",
@@ -56,15 +55,15 @@ func TestRunsSuite(t *testing.T) {
 		secretKeyName,
 	}
 	file, _ := json.MarshalIndent(providerConfig, "", " ")
-	_ = ioutil.WriteFile(configFile, file, 0644)
+	_ = os.WriteFile(configFile, file, 0644)
 
 	fixture := dns.NewFixture(&googledomainsDNSProviderSolver{},
+		dns.SetDNSName(domain),
 		dns.SetResolvedZone(domain),
-		dns.SetResolvedFQDN(GetRandomString(8)+"."+domain+"."),
+		dns.SetResolvedFQDN(GetRandomString(8)+"."+domain),
 		dns.SetAllowAmbientCredentials(false),
 		dns.SetManifestPath("testdata/googledomains"),
-		dns.SetBinariesPath("_test/kubebuilder/bin"),
-		dns.SetStrict(false),
+		dns.SetStrict(true),
 	)
 
 	fixture.RunConformance(t)
