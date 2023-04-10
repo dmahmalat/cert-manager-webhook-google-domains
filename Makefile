@@ -1,46 +1,72 @@
-OS ?= $(shell go env GOOS)
-ARCH ?= $(shell go env GOARCH)
-KUBEBUILDER_VERSION=2.3.2
+.DEFAULT_GOAL:=help
 
-test: _test/kubebuilder
-	go test -v .
+# VARIABLES
+GO ?= $(shell which go)
+OS ?= $(shell $(GO) env GOOS)
+ARCH ?= $(shell $(GO) env GOARCH)
 
-_test/kubebuilder:
-	echo "starting kubebuilder"
-	curl -fsSL https://github.com/kubernetes-sigs/kubebuilder/releases/download/v$(KUBEBUILDER_VERSION)/kubebuilder_$(KUBEBUILDER_VERSION)_$(OS)_$(ARCH).tar.gz -o kubebuilder-tools.tar.gz
+KUBE_VERSION=1.26.0
+export TEST_ASSET_ETCD=_test/kubebuilder/etcd
+export TEST_ASSET_KUBE_APISERVER=_test/kubebuilder/kube-apiserver
+export TEST_ASSET_KUBECTL=_test/kubebuilder/kubectl
+
+REGISTRY = "dmahmalat.github.io"
+IMAGE_NAME = "cert-manager-webhook-google-domains"
+IMAGE_TAG  = "1.1.0"
+
+
+##@ Help
+.PHONY: help
+help: ## Display this help screen
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+
+##@ Test
+.PHONY: test
+test: ## Usage: TEST_DOMAIN_NAME=<domain name> TEST_SECRET=$(echo -n '<ACME API Key>' | base64) make test
+	curl -fsSL https://go.kubebuilder.io/test-tools/$(KUBE_VERSION)/$(OS)/$(ARCH) -o kubebuilder-tools.tar.gz
 	mkdir -p _test/kubebuilder
 	tar -xvf kubebuilder-tools.tar.gz
-	mv kubebuilder_$(KUBEBUILDER_VERSION)_$(OS)_$(ARCH)/bin _test/kubebuilder/
+	mv kubebuilder/bin/* _test/kubebuilder/
 	rm kubebuilder-tools.tar.gz
-	rm -R kubebuilder_$(KUBEBUILDER_VERSION)_$(OS)_$(ARCH)
+	rm -rf kubebuilder/
+	mkdir -p _test/data
+	$(GO) test -v .
 
-clean: clean-kubebuilder
+##@ Clean
+.PHONY: clean
+clean: ## Clean kubebuilder and test data artifacts
+	@rm -rf _test/
 
-clean-kubebuilder:
-	rm -Rf _test/kubebuilder
-
-REGISTRY = "dmahmalat"
-IMAGE_NAME = "cert-manager-webhook-google-domains"
-IMAGE_TAG  = "1.0.0"
-
-build:
+##@ Build
+.PHONY: build
+build: ## Build the docker image
 	DOCKER_BUILDKIT=1 docker build -t "$(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)" .
 
-push-release:
+##@ Release
+.PHONY: release
+release: ## Push and release the docker image to the public registry
 	docker push "$(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)"
 
-build-latest:
+##@ Build Latest
+.PHONY: build-latest
+build-latest: ## Build the docker image with latest tag
 	DOCKER_BUILDKIT=1 docker build -t "$(REGISTRY)/$(IMAGE_NAME):latest" .
 
-push-latest:
+##@ Release Latest
+.PHONY: release-latest
+release-latest: ## Push and release the docker image to the public registry with latest tag
 	docker push "$(REGISTRY)/$(IMAGE_NAME):latest"
 
-verify-chart:
-	helm lint chart/
+##@ Verify Chart
+.PHONY: verify-chart
+verify-chart: ## Lint the helm chart for errors
+	@helm lint chart/
 
-generate-chart:
-	helm package chart/
-	helm repo index --url https://dmahmalat.github.io/charts .
-	mkdir -p _chart/
-	mv cert-manager-webhook-google-domains-*.tgz _chart/
-	mv index.yaml _chart/
+##@ Generate Chart
+.PHONY: generate-chart
+generate-chart: ## Generate the helm chart artifacts for release
+	@helm package chart/
+	@helm repo index --url https://dmahmalat.github.io/charts .
+	@mkdir -p _chart/
+	@mv cert-manager-webhook-google-domains-*.tgz _chart/
+	@mv index.yaml _chart/

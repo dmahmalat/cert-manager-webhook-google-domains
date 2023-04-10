@@ -3,8 +3,8 @@ type: application
 name: cert-manager-webhook-google-domains
 description: Allow cert-manager to solve DNS challenges using Google Domains DNS
 
-version: 1.0.0
-appVersion: 1.0.0
+version: 0.0.0-template
+appVersion: 0.0.0-template
 
 icon: https://domains.google/static/images/logo/new_logo.svg
 home: https://github.com/dmahmalat/cert-manager-webhook-google-domains/chart
