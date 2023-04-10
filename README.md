@@ -1,8 +1,9 @@
+[![Build](https://github.com/dmahmalat/cert-manager-webhook-google-domains/actions/workflows/publish.yml/badge.svg)](https://github.com/dmahmalat/cert-manager-webhook-google-domains/actions/workflows/publish.yml)
+
 # ACME webhook for google-domains DNS API
 Usage:
 ```bash
-helm repo add dmahmalat https://dmahmalat.github.io/charts
-helm install my-release dmahmalat/cert-manager-webhook-google-domains
+helm install my-release oci://ghcr.io/dmahmalat/charts/cert-manager-webhook-google-domains
 ```
 
 To test:
@@ -11,6 +12,7 @@ TEST_DOMAIN_NAME=<domain name> TEST_SECRET=$(echo -n '<google domains ACME API K
 ```
 
 # Example Issuer
+**Note**: Make sure to change the values.yaml `groupName` variable accordingly.
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -30,7 +32,7 @@ spec:
     solvers:
     - dns01:
         webhook:
-          groupName: acmedns.googleapis.com
+          groupName: acmedns.example.org
           solverName: google-domains
           config:
             apiUrl: https://acmedns.googleapis.com/v1
@@ -55,5 +57,6 @@ stringData:
 
 # Credits
 This is based on the project [deyaeddin/cert-manager-webhook-hetzner](https://github.com/deyaeddin/cert-manager-webhook-hetzner) and [cert-manager/webhook-example](https://github.com/cert-manager/webhook-example)
+Additional credits to forked project [nblxa/cert-manager-webhook-google-domains](https://github.com/nblxa/cert-manager-webhook-google-domains) for various fixes, updates and automation.
 
 Please feel free to fork/optimize/make an official version of this for release to https://artifacthub.io/.
