@@ -10,9 +10,9 @@ export TEST_ASSET_ETCD=_test/kubebuilder/etcd
 export TEST_ASSET_KUBE_APISERVER=_test/kubebuilder/kube-apiserver
 export TEST_ASSET_KUBECTL=_test/kubebuilder/kubectl
 
-REGISTRY = "dmahmalat.github.io"
-IMAGE_NAME = "cert-manager-webhook-google-domains"
-IMAGE_TAG  = "1.1.0"
+REGISTRY = ghcr.io
+IMAGE_NAME = dmahmalat/cert-manager-webhook-google-domains
+IMAGE_TAG  = 1.1.0
 
 
 ##@ Help
@@ -34,28 +34,29 @@ test: ## Usage: TEST_DOMAIN_NAME=<domain name> TEST_SECRET=$(echo -n '<ACME API 
 
 ##@ Clean
 .PHONY: clean
-clean: ## Clean kubebuilder and test data artifacts
+clean: ## Clean kubebuilder, helm and test data artifacts
 	@rm -rf _test/
+	@rm -rf _chart/
 
 ##@ Build
 .PHONY: build
 build: ## Build the docker image
-	DOCKER_BUILDKIT=1 docker build -t "$(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)" .
+	@DOCKER_BUILDKIT=1 docker build -t $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG) .
 
 ##@ Release
 .PHONY: release
 release: ## Push and release the docker image to the public registry
-	docker push "$(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)"
+	@docker push $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 
 ##@ Build Latest
 .PHONY: build-latest
 build-latest: ## Build the docker image with latest tag
-	DOCKER_BUILDKIT=1 docker build -t "$(REGISTRY)/$(IMAGE_NAME):latest" .
+	@DOCKER_BUILDKIT=1 docker build -t $(REGISTRY)/$(IMAGE_NAME):latest .
 
 ##@ Release Latest
 .PHONY: release-latest
 release-latest: ## Push and release the docker image to the public registry with latest tag
-	docker push "$(REGISTRY)/$(IMAGE_NAME):latest"
+	@docker push $(REGISTRY)/$(IMAGE_NAME):latest
 
 ##@ Verify Chart
 .PHONY: verify-chart
@@ -66,7 +67,5 @@ verify-chart: ## Lint the helm chart for errors
 .PHONY: generate-chart
 generate-chart: ## Generate the helm chart artifacts for release
 	@helm package chart/
-	@helm repo index --url https://dmahmalat.github.io/charts .
 	@mkdir -p _chart/
 	@mv cert-manager-webhook-google-domains-*.tgz _chart/
-	@mv index.yaml _chart/
