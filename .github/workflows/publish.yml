@@ -7,9 +7,9 @@ name: Publish packages
 
 on:
   push:
-    tags: [ 'v*.*.*' ]      # Publish semver tags as releases.
-  pull_request:
-    branches: [ "master" ]
+    tags: [ 'v*.*.*' ]        # Publish semver tags as releases.
+  # pull_request:
+  #   branches: [ "master" ]  # Don't run the job on PRs at all.
 
 env:
   REGISTRY: ghcr.io
