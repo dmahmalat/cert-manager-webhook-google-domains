@@ -12,7 +12,7 @@ export TEST_ASSET_KUBECTL=_test/kubebuilder/kubectl
 
 REGISTRY = ghcr.io
 IMAGE_NAME = dmahmalat/cert-manager-webhook-google-domains
-IMAGE_TAG  = 1.1.2
+IMAGE_TAG  = 1.1.3
 
 
 ##@ Help
